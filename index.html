@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Computer Classification Quiz — CAP31101 · LUANAR Bunda</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0e0f13;
+  --surface: #16181f;
+  --surface2: #1e2029;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.13);
+  --text: #f0f0f0;
+  --muted: #8a8fa8;
+  --accent: #2ecc7e;
+  --accent2: #1abc9c;
+  --green: #2ecc7e;
+  --red: #ff5c6a;
+  --amber: #ffbb3d;
+  --pill-bg: rgba(46,204,126,0.12);
+  --pill-border: rgba(46,204,126,0.3);
+  --font-display: 'Syne', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: var(--font-body); font-size: 15px; line-height: 1.65; min-height: 100vh; }
+body::before {
+  content: ''; position: fixed; inset: 0;
+  background-image: linear-gradient(rgba(46,204,126,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(46,204,126,0.03) 1px, transparent 1px);
+  background-size: 40px 40px; pointer-events: none; z-index: 0;
+}
+.wrap { position: relative; z-index: 1; max-width: 760px; margin: 0 auto; padding: 0 20px 80px; }
+.screen { display: none; animation: fadeUp 0.4s ease; }
+.screen.active { display: block; }
+@keyframes fadeUp { from { opacity:0; transform: translateY(16px); } to { opacity:1; transform: translateY(0); } }
+nav { display: flex; align-items: center; justify-content: space-between; padding: 20px 0; margin-bottom: 20px; border-bottom: 1px solid var(--border); }
+.nav-logo { font-family: var(--font-display); font-weight: 800; font-size: 15px; letter-spacing: 0.05em; color: var(--accent); }
+.nav-logo span { color: var(--muted); font-weight: 400; }
+.nav-links { display: flex; gap: 6px; }
+.nav-btn { background: transparent; border: 1px solid var(--border2); color: var(--muted); padding: 6px 14px; border-radius: 40px; font-size: 12px; font-family: var(--font-body); cursor: pointer; transition: all 0.2s; }
+.nav-btn:hover, .nav-btn.active { border-color: var(--accent); color: var(--accent); background: var(--pill-bg); }
+.hero { padding: 60px 0 40px; }
+.hero-tag { display: inline-flex; align-items: center; gap: 8px; background: var(--pill-bg); border: 1px solid var(--pill-border); color: var(--accent); font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; padding: 5px 14px; border-radius: 40px; margin-bottom: 28px; }
+.hero-tag::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+h1 { font-family: var(--font-display); font-size: clamp(34px, 6vw, 54px); font-weight: 800; line-height: 1.05; letter-spacing: -0.02em; margin-bottom: 18px; }
+h1 em { font-style: normal; color: var(--accent); }
+.hero-sub { font-size: 15px; color: var(--muted); max-width: 480px; margin-bottom: 36px; line-height: 1.7; }
+.hero-stats { display: flex; gap: 28px; margin-bottom: 40px; }
+.stat-n { font-family: var(--font-display); font-size: 28px; font-weight: 700; color: var(--text); }
+.stat-l { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 2px; }
+.register-card { background: var(--surface); border: 1px solid var(--border2); border-radius: 16px; padding: 32px; margin-bottom: 40px; }
+.register-card h2 { font-family: var(--font-display); font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+.register-card p { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+.form-row.full { grid-template-columns: 1fr; }
+label { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 6px; }
+input, select { width: 100%; background: var(--surface2); border: 1px solid var(--border2); border-radius: 8px; color: var(--text); font-family: var(--font-body); font-size: 14px; padding: 10px 14px; outline: none; transition: border-color 0.2s; }
+input:focus, select:focus { border-color: var(--accent); }
+input::placeholder { color: var(--muted); }
+select option { background: var(--surface2); }
+.topic-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+.topic-toggle { background: var(--surface2); border: 1px solid var(--border2); color: var(--muted); padding: 6px 14px; border-radius: 40px; font-size: 12px; cursor: pointer; font-family: var(--font-body); transition: all 0.2s; }
+.topic-toggle.on { background: var(--pill-bg); border-color: var(--pill-border); color: var(--accent); }
+.btn { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-body); font-size: 14px; font-weight: 500; padding: 11px 22px; border-radius: 40px; cursor: pointer; border: none; transition: all 0.2s; }
+.btn-primary { background: var(--accent); color: #0e0f13; font-weight: 700; }
+.btn-primary:hover { background: #3de88f; transform: translateY(-1px); }
+.btn-ghost { background: transparent; border: 1px solid var(--border2); color: var(--muted); }
+.btn-ghost:hover { color: var(--text); background: var(--surface2); }
+.btn-sm { padding: 7px 16px; font-size: 13px; }
+.progress-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.progress-label { font-size: 12px; color: var(--muted); }
+.progress-score { font-family: var(--font-display); font-size: 14px; font-weight: 600; color: var(--accent); }
+.progress-track { height: 3px; background: var(--surface2); border-radius: 3px; margin-bottom: 28px; overflow: hidden; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent2), var(--accent)); border-radius: 3px; transition: width 0.5s cubic-bezier(0.4,0,0.2,1); }
+.q-card { background: var(--surface); border: 1px solid var(--border2); border-radius: 16px; padding: 28px 28px 20px; margin-bottom: 16px; }
+.q-section-tag { display: inline-block; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); background: var(--pill-bg); border: 1px solid var(--pill-border); padding: 3px 10px; border-radius: 40px; margin-bottom: 14px; }
+.q-text { font-family: var(--font-display); font-size: 18px; font-weight: 600; line-height: 1.4; color: var(--text); margin-bottom: 22px; }
+.options { display: grid; gap: 9px; }
+.opt-btn { display: flex; align-items: flex-start; gap: 12px; background: var(--surface2); border: 1px solid var(--border2); border-radius: 10px; padding: 13px 16px; text-align: left; cursor: pointer; width: 100%; font-family: var(--font-body); font-size: 14px; color: var(--text); transition: all 0.2s; line-height: 1.5; }
+.opt-btn:hover:not(:disabled) { border-color: var(--accent); background: rgba(46,204,126,0.06); }
+.opt-btn:disabled { cursor: default; }
+.opt-letter { min-width: 24px; height: 24px; border-radius: 6px; background: var(--border); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: var(--muted); font-family: var(--font-display); flex-shrink: 0; margin-top: 1px; }
+.opt-btn.correct { border-color: var(--green); background: rgba(46,204,126,0.08); }
+.opt-btn.correct .opt-letter { background: var(--green); color: #0e0f13; }
+.opt-btn.wrong { border-color: var(--red); background: rgba(255,92,106,0.08); }
+.opt-btn.wrong .opt-letter { background: var(--red); color: #fff; }
+.feedback-box { border-radius: 10px; padding: 14px 16px; font-size: 13px; line-height: 1.65; margin-bottom: 14px; display: none; }
+.feedback-box.correct { background: rgba(46,204,126,0.1); border: 1px solid rgba(46,204,126,0.3); color: #7ef0b0; }
+.feedback-box.wrong { background: rgba(255,92,106,0.1); border: 1px solid rgba(255,92,106,0.3); color: #ffa0a8; }
+.feedback-box strong { display: block; margin-bottom: 4px; font-family: var(--font-display); font-size: 13px; }
+.discussion-section { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px; margin-bottom: 16px; display: none; }
+.discussion-section h4 { font-family: var(--font-display); font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+.comments-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; max-height: 260px; overflow-y: auto; }
+.comment { background: var(--surface2); border-radius: 8px; padding: 10px 12px; font-size: 13px; }
+.comment-author { font-weight: 500; color: var(--accent); font-size: 12px; margin-bottom: 3px; }
+.comment-text { color: var(--text); line-height: 1.5; }
+.comment-time { font-size: 10px; color: var(--muted); margin-top: 4px; }
+.comment-input-row { display: flex; gap: 8px; }
+.comment-input-row input { flex: 1; }
+.no-comments { font-size: 12px; color: var(--muted); font-style: italic; }
+.quiz-nav { display: flex; align-items: center; justify-content: space-between; }
+.result-hero { text-align: center; padding: 60px 0 40px; }
+.result-ring { width: 140px; height: 140px; border-radius: 50%; background: conic-gradient(var(--accent) var(--pct, 0%), var(--surface2) 0%); display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; box-shadow: 0 0 40px rgba(46,204,126,0.2); }
+.result-ring-inner { width: 108px; height: 108px; border-radius: 50%; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.result-pct { font-family: var(--font-display); font-size: 32px; font-weight: 800; }
+.result-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+.result-title { font-family: var(--font-display); font-size: 28px; font-weight: 700; margin-bottom: 10px; }
+.result-sub { color: var(--muted); max-width: 420px; margin: 0 auto 32px; font-size: 14px; line-height: 1.65; }
+.result-breakdown { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 36px; }
+.breakdown-card { background: var(--surface); border: 1px solid var(--border2); border-radius: 12px; padding: 18px; text-align: center; }
+.breakdown-n { font-family: var(--font-display); font-size: 28px; font-weight: 700; }
+.breakdown-n.green { color: var(--green); }
+.breakdown-n.red { color: var(--red); }
+.breakdown-n.amber { color: var(--amber); }
+.breakdown-l { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin-top: 4px; }
+.lb-card { background: var(--surface); border: 1px solid var(--border2); border-radius: 16px; overflow: hidden; margin-bottom: 24px; }
+.lb-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.lb-header h3 { font-family: var(--font-display); font-size: 17px; font-weight: 700; }
+.lb-row { display: flex; align-items: center; gap: 16px; padding: 14px 24px; border-bottom: 1px solid var(--border); transition: background 0.15s; }
+.lb-row:last-child { border-bottom: none; }
+.lb-row:hover { background: var(--surface2); }
+.lb-rank { font-family: var(--font-display); font-size: 14px; font-weight: 700; color: var(--muted); width: 24px; text-align: center; flex-shrink: 0; }
+.lb-rank.gold { color: #ffd700; } .lb-rank.silver { color: #c0c0c0; } .lb-rank.bronze { color: #cd7f32; }
+.lb-avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 13px; font-weight: 700; flex-shrink: 0; }
+.lb-info { flex: 1; }
+.lb-name { font-size: 14px; font-weight: 500; }
+.lb-meta { font-size: 11px; color: var(--muted); margin-top: 1px; }
+.lb-score-wrap { text-align: right; }
+.lb-score { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--accent); }
+.lb-pct { font-size: 11px; color: var(--muted); }
+.lb-empty { padding: 36px 24px; text-align: center; color: var(--muted); font-size: 13px; }
+.badge { display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 40px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; }
+.badge-you { background: rgba(46,204,126,0.15); color: var(--accent); border: 1px solid var(--pill-border); }
+.text-muted { color: var(--muted); } .text-center { text-align: center; } .flex-gap { display: flex; gap: 10px; flex-wrap: wrap; }
+::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+@media(max-width: 560px) { .form-row { grid-template-columns: 1fr; } .result-breakdown { grid-template-columns: 1fr 1fr; } h1 { font-size: 30px; } .q-text { font-size: 16px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <div class="nav-logo">CAP31101<span>/computer-systems</span></div>
+    <div class="nav-links">
+      <button class="nav-btn active" onclick="showScreen('home')">Quiz</button>
+      <button class="nav-btn" onclick="showScreen('leaderboard')">Leaderboard</button>
+    </div>
+  </nav>
+
+  <!-- HOME -->
+  <div id="screen-home" class="screen active">
+    <div class="hero">
+      <div class="hero-tag">CAP31101 · ONE % STUDY HUB · LUANAR</div>
+      <h1>Computer <em>Classification</em><br>&amp; Types</h1>
+      <p class="hero-sub">60 questions built from your Lecture 2 slides: supercomputers, mainframes, servers, microcomputers, analog vs digital signals, ADC/DAC, and hybrid computers. Compete, discuss, and track your rank.</p>
+      <div class="hero-stats">
+        <div class="stat"><div class="stat-n">60</div><div class="stat-l">Questions</div></div>
+        <div class="stat"><div class="stat-n">10</div><div class="stat-l">Topics</div></div>
+        <div class="stat"><div class="stat-n" id="stat-players">0</div><div class="stat-l">Attempts</div></div>
+      </div>
+    </div>
+    <div class="register-card">
+      <h2>Register to start</h2>
+      <p>Your name and score will appear on the ONE % Study Hub leaderboard.</p>
+      <div class="form-row">
+        <div><label for="inp-name">Full name</label><input type="text" id="inp-name" placeholder="e.g. Chisomo Phiri"></div>
+        <div><label for="inp-reg">Reg. number</label><input type="text" id="inp-reg" placeholder="e.g. 2501013**"></div>
+      </div>
+      <div class="form-row full">
+        <div>
+          <label>Filter topics (tap to deselect)</label>
+          <div class="topic-grid" id="topic-grid"></div>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="startQuiz()" style="width:100%;justify-content:center;margin-top:4px">Start quiz →</button>
+    </div>
+  </div>
+
+  <!-- QUIZ -->
+  <div id="screen-quiz" class="screen">
+    <div style="padding-top: 24px;">
+      <div class="progress-header">
+        <span class="progress-label" id="prog-label">Question 1 of 60</span>
+        <span class="progress-score" id="prog-score">0 pts</span>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+      <div class="q-card">
+        <div class="q-section-tag" id="q-section"></div>
+        <div class="q-text" id="q-text"></div>
+        <div class="options" id="options"></div>
+      </div>
+      <div class="feedback-box" id="feedback"></div>
+      <div class="discussion-section" id="discussion-section">
+        <h4>💬 Group discussion</h4>
+        <div class="comments-list" id="comments-list"></div>
+        <div class="comment-input-row">
+          <input type="text" id="comment-input" placeholder="Add your thought…" maxlength="200" onkeydown="if(event.key==='Enter')postComment()">
+          <button class="btn btn-ghost btn-sm" onclick="postComment()">Post</button>
+        </div>
+      </div>
+      <div class="quiz-nav">
+        <button class="btn btn-ghost" onclick="showScreen('home')">← Exit</button>
+        <button class="btn btn-primary" id="next-btn" onclick="nextQ()" style="display:none">Next →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div id="screen-result" class="screen">
+    <div class="result-hero">
+      <div class="result-ring" id="result-ring">
+        <div class="result-ring-inner">
+          <div class="result-pct" id="result-pct">0%</div>
+          <div class="result-label">score</div>
+        </div>
+      </div>
+      <div class="result-title" id="result-title">Well done!</div>
+      <div class="result-sub" id="result-sub"></div>
+      <div class="result-breakdown">
+        <div class="breakdown-card"><div class="breakdown-n green" id="bd-correct">0</div><div class="breakdown-l">Correct</div></div>
+        <div class="breakdown-card"><div class="breakdown-n red" id="bd-wrong">0</div><div class="breakdown-l">Wrong</div></div>
+        <div class="breakdown-card"><div class="breakdown-n amber" id="bd-total">0</div><div class="breakdown-l">Total</div></div>
+      </div>
+      <div class="flex-gap" style="justify-content:center">
+        <button class="btn btn-ghost" onclick="restartQuiz()">Retry</button>
+        <button class="btn btn-primary" onclick="showScreen('leaderboard')">View leaderboard →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LEADERBOARD -->
+  <div id="screen-leaderboard" class="screen">
+    <div style="padding-top: 32px;">
+      <h2 style="font-family: var(--font-display); font-size: 26px; font-weight: 800; margin-bottom: 6px;">Leaderboard</h2>
+      <p class="text-muted" style="font-size: 13px; margin-bottom: 28px;">ONE % Study Hub — CAP31101 Lecture 2 rankings.</p>
+      <div class="lb-card">
+        <div class="lb-header"><h3>Top scores</h3><span class="text-muted" style="font-size:12px" id="lb-count">0 attempts</span></div>
+        <div id="lb-rows"></div>
+      </div>
+      <div class="text-center"><button class="btn btn-ghost" onclick="showScreen('home')">Take the quiz →</button></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── QUESTION BANK — built from CAP31101 Lecture 2 slides ───
+// Format: correct answer is always stored separately, randomized at runtime
+const RAW=[];
+function Q(s,q,c,w,e){RAW.push({s,q,correct:c,wrong:w,exp:e});}
+/* Supercomputers */
+Q("Supercomputers","Supercomputer performance is measured in:","FLOPS (floating point operations per second)",["MIPS (millions of memory instructions per second)","GHz (gigahertz measured at the power supply)","DPI (dots printed per inch on paper)"],"Supercomputers are rated in FLOPS: floating point operations per second.");
+Q("Supercomputers","Compared with a petaflop (10^15), an exaflop (10^18) is:","1,000 times faster",["100 times faster","10 times faster","1,000,000 times faster"],"10^18 / 10^15 = 10^3 = 1,000.");
+Q("Supercomputers","Which feature is a key characteristic of supercomputers?","Thousands of CPUs and GPUs working in parallel",["A single processor sized for one household room","Passive cooling using no fans or water at all","Battery power lasting several full days in use"],"They use massive parallelism and need specialised cooling such as chilled water or liquid cooling.");
+Q("Supercomputers","Why do supercomputers need chilled water or liquid cooling?","To stop overheating from the huge processing load",["To make the screens clearer and easier to read in light","To keep data stored more permanently on its disks","To reduce the number of users who can log in at once"],"Thousands of processors generate huge heat.");
+Q("Supercomputers","Which task is a typical use of a supercomputer?","Climate and weather modelling",["Typing a one-page letter","Playing music from a phone","Printing a student's timetable"],"Typical uses: climate modelling, drug discovery, space exploration, AI research and weapons simulation.");
+Q("Supercomputers","Which was named in the lecture as the world's first exascale computer?","Frontier (USA)",["Fugaku (Japan)","Summit (USA)","Sierra (USA)"],"Frontier (USA) is the first exascale computer; Fugaku, Summit and Sierra are other notable examples.");
+/* Mainframes */
+Q("Mainframes","Mainframe computers are designed mainly for:","high-volume, critical business data processing",["scientific simulation at exascale speeds only","portable use by individual students at home","controlling a single household kitchen appliance"],"Mainframes excel at processing huge numbers of transactions quickly, reliably and securely.");
+Q("Mainframes","How do mainframes compare with supercomputers?","Slower at science but better at huge volumes of transactions",["Faster at scientific work but weaker at handling transactions","Identical in speed, size and purpose in all cases","Smaller than a personal computer in every case"],"Mainframes are not as fast as supercomputers at science but excel at transactions.");
+Q("Mainframes","A mainframe is described as having about 5 minutes of downtime per year. This shows its:","extremely high reliability",["very low reliability and constant downtime","restricted to a single user at once","small physical size and low power demand"],"Mainframes are built to run continuously with very low downtime.");
+Q("Mainframes","What does 'hot-swappable components' mean on a mainframe?","Failed parts can be replaced without a system shutdown",["Parts become very hot when the system is run at full load","Parts are swapped only after the whole building loses power","Parts can be removed only by the original users"],"Hot-swapping keeps the system running during repairs.");
+Q("Mainframes","Which organisation is most likely to rely on a mainframe?","A bank processing millions of ATM transactions daily",["A student writing an assignment on a laptop at home","A farmer adding up prices on a pocket calculator","A shop weighing goods on a battery-powered scale"],"Banking, airlines, government and healthcare use mainframes.");
+Q("Mainframes","A mainframe system is down for 5 minutes in a year of 525,600 minutes. Its availability is closest to:","99.999%",["99%","99.9%","95%"],"5/525,600 ≈ 0.00095% downtime, so availability ≈ 99.999%.");
+/* Minicomputers & Servers */
+Q("Minicomputers & Servers","Minicomputers occupy the space between:","the large mainframe and the personal computer",["the supercomputer and the mainframe computer","the smartphone and the smartwatch computer","the analog and the hybrid computer types"],"Minicomputers are also called mid-range computers or departmental servers.");
+Q("Minicomputers & Servers","Which minicomputer is considered the first commercially successful one?","DEC PDP-8 (1965)",["IBM PC (1981)","Apple II (1977)","IBM zSeries z16"],"The DEC PDP-8 of 1965 is considered the first commercially successful minicomputer.");
+Q("Minicomputers & Servers","Today the term 'minicomputer' has largely been replaced by:","'server' or 'mid-range system'",["'smartphone' or 'tablet'","'supercomputer' or 'exascale system'","'embedded system' or 'microcontroller'"],"Modern equivalents are servers and mid-range systems.");
+Q("Minicomputers & Servers","A server is best described as a computer that:","provides files, email and web pages to other networked computers",["is built into a car to control its braking system","is worn on the wrist to count steps and heartbeats","processes weather simulations at petaflop speeds across a country"],"Servers provide services to other networked computers.");
+Q("Minicomputers & Servers","A university runs authentication and file storage servers for its computer labs. This is an example of:","a mid-range server",["a supercomputer","a wearable computer","an analog computer"],"Mid-range servers are found in universities, medium-sized businesses and regional government offices.");
+/* Microcomputers */
+Q("Microcomputers","A microcomputer is built around:","a microprocessor: a complete CPU on one chip",["a room full of vacuum tubes and glowing wires","a chilled-water cooled cluster of many racks","a mechanical gear mechanism turned by a crank"],"The microprocessor, developed in the early 1970s, made personal computers possible.");
+Q("Microcomputers","Which pair of machines brought computing to homes and schools?","Apple II (1977) and IBM PC (1981)",["DEC PDP-8 (1965) and Frontier (USA)","IBM z16 and Summit (USA)","Fugaku (Japan) and Sierra (USA)"],"The Apple II and IBM PC began the PC revolution.");
+Q("Microcomputers","Which is a category of microcomputer listed in the lecture?","Wearable computers",["Hot-swappable mainframes","Exascale clusters","Departmental servers"],"Categories: desktops, laptops, tablets, smartphones, wearables and embedded computers.");
+Q("Microcomputers","A smartwatch or fitness tracker is classified as a:","wearable computer",["a mainframe computer","a minicomputer system","a supercomputer"],"Wearables include smartwatches, fitness trackers and smart glasses.");
+/* Desktops & Laptops */
+Q("Desktops & Laptops","Why are desktops highly upgradeable?","They use separate parts that are added or replaced easily",["They are built into a single sealed unit with no access","They run only on battery power and cannot be plugged in","They contain no motherboard so nothing can be changed"],"Separate components make desktops upgradeable and customisable.");
+Q("Desktops & Laptops","Which is an ADVANTAGE of a desktop over a laptop?","Better cooling for stronger processors at a similar price",["Longer battery life when you are away from a socket","Lighter weight, which makes travelling much easier","A built-in battery, screen and keyboard in one case"],"Better cooling allows more powerful parts than laptops of similar price.");
+Q("Desktops & Laptops","Which is a DISADVANTAGE of a desktop?","Not portable; needs a workspace with a power outlet",["Impossible to upgrade or repair at any point in its life","Always weaker than a smartphone in overall performance","Cannot be connected to any kind of external monitor"],"Desktops are not portable, use more power and take up space.");
+Q("Desktops & Laptops","An All-in-One (AIO) desktop is one where:","the monitor and computer components are integrated into one unit",["the keyboard is the only part that stays separate from the screen","the computer is worn on the body like a wristwatch","the CPU is kept in a remote data centre and reached online"],"Examples include Apple iMac, HP EliteOne and Microsoft Surface Studio.");
+Q("Desktops & Laptops","With upgrades, a desktop can remain useful for:","7 to 10 years",["1 to 2 years","3 to 4 years","15 to 20 years"],"The lecture states 7 to 10 years.");
+Q("Desktops & Laptops","What is the most common laptop display size given in the lecture?","15.6 inches",["12 inches","17 inches","13.3 inches"],"Laptop screens are typically 12 to 17 inches; 15.6 inches is the most common.");
+Q("Desktops & Laptops","Which type of laptop focuses on a powerful GPU, high-refresh-rate displays and advanced cooling?","Gaming laptop",["Chromebook","Business laptop","Ultrabook"],"Gaming laptops emphasise graphics power and cooling.");
+Q("Desktops & Laptops","Chromebooks are best described as:","lightweight, web-based laptops running ChromeOS, popular in education",["high-end laptops built for heavy video rendering and games","industrial computers fitted inside factory machines and robots","pocket computers that include cellular phone service"],"Chromebooks run ChromeOS and are common in education.");
+/* Tablets, Phones & Embedded */
+Q("Tablets, Phones & Embedded","Tablets and smartphones replace the keyboard-and-mouse interface with:","a direct touch interface on the screen",["a voice-only interface with no screen at all","a punch-card interface with paper input only","a lever and dial interface using moving parts"],"They use touch gestures such as tap, swipe and pinch-to-zoom.");
+Q("Tablets, Phones & Embedded","A smartphone is best described as:","a pocket-sized computer combined with a mobile phone",["a mainframe terminal with a plain numeric keypad","an analog radio with a small display screen","a printer that sends text messages to a phone"],"Smartphones are pocket computers with cellular communication capability.");
+Q("Tablets, Phones & Embedded","An embedded computer is a microprocessor or microcontroller:","built into a larger device to control its functions",["used only by large banks to process transactions","designed to run many different applications at once","stored in a cloud data centre and shared online"],"Embedded systems are programmed for one specific task and rarely need user interaction.");
+Q("Tablets, Phones & Embedded","Which is the most numerous type of computer in the world?","Embedded computers",["Supercomputers","Mainframes","Desktop computers"],"There are billions of embedded computers.");
+Q("Tablets, Phones & Embedded","Embedded computers are the basis of the:","Internet of Things (IoT)",["exascale computing race","analog broadcasting network","punch-card computing era"],"They make ordinary objects 'smart'.");
+/* Signals */
+Q("Analog & Digital Signals","An analog signal is one that:","varies continuously and can take any value in a range",["has only two states, which are ON and OFF only","changes in fixed steps with gaps between values","is stored only on a compact disc as pits and lands"],"Analog signals change smoothly, without gaps or jumps.");
+Q("Analog & Digital Signals","A digital signal most commonly uses how many states?","Two (0 and 1)",["Three","Ten","Infinitely many"],"ON (1) and OFF (0), corresponding to high and low voltages.");
+Q("Analog & Digital Signals","Which is an example of an ANALOG signal?","A radio volume knob changing the sound smoothly",["A light switch that is either fully on or off","A compact disc with microscopic pits and lands","A photograph built up from millions of pixels"],"A volume knob, wall clock with hands and a speedometer needle are analog.");
+Q("Analog & Digital Signals","Which is an example of a DIGITAL signal?","A digital thermometer displaying 36.8°C",["A vinyl record being played on a turntable","A traditional mercury glass thermometer","A wall clock with hands that sweep around"],"Digital devices display discrete numbers; they sample and round.");
+Q("Analog & Digital Signals","Which is a strength of digital signals over analog ones?","They can be copied perfectly with no degradation",["They mirror physical phenomena in a direct way","They are more easily distorted by outside noise","They degrade over time like a vinyl record does"],"Digital copies are identical and noise immunity is high; analog degrades.");
+Q("Analog & Digital Signals","Analog signals are best suited to:","real-time physical measurement and control",["perfect long-term copying of digital files","storage and complex processing of large data","transmitting data over a network quickly"],"Digital is best for storage, transmission and complex processing.");
+Q("Analog & Digital Signals","The precision of a digital signal is determined by:","the number of bits used",["the length of the cable","the age of the recording tape","the colour of the display"],"More bits mean finer precision.");
+/* ADC/DAC & binary */
+Q("ADC, DAC & Binary","To process real-world analog signals on a computer, they must first be converted by a(n):","Analog-to-Digital Converter (ADC)",["Digital-to-Analog Converter (DAC)","Random Access Memory (RAM)","Power Supply Unit (PSU)"],"ADC converts analog to digital form.");
+Q("ADC, DAC & Binary","Speakers and motors use which conversion?","Digital-to-Analog Conversion (DAC)",["Analog-to-Digital Conversion (ADC)","Binary-to-Text Conversion","Voltage-to-Heat Conversion"],"DAC is the reverse process of ADC.");
+Q("ADC, DAC & Binary","A data logger's ADC samples a rain gauge voltage every 5 minutes. How many samples does it record per hour?","12",["5","10","60"],"60/5 = 12.");
+Q("ADC, DAC & Binary","With the same 5-minute sampling, how many samples are recorded in a full day?","288",["144","120","1,440"],"12 per hour × 24 hours = 288.");
+Q("ADC, DAC & Binary","What decimal number does the 8-bit binary 11011000 represent?","216",["198","208","232"],"128+64+0+16+8+0+0+0 = 216.");
+Q("ADC, DAC & Binary","What decimal number does binary 1010 represent?","10",["5","12","20"],"8+0+2+0 = 10.");
+Q("ADC, DAC & Binary","How many different values can one byte (8 bits) represent?","256",["8","128","1,024"],"2^8 = 256.");
+/* Analog vs Digital Computers */
+Q("Analog vs Digital Computers","An analog computer calculates by using:","physical quantities such as voltage, rotation or fluid flow",["only binary numbers that are stored in the computer's memory","only text characters that are typed in from a keyboard","only still images that are read in by a flatbed scanner"],"Analog computers work directly with continuous data without converting it into numbers.");
+Q("Analog vs Digital Computers","Which is a limitation of analog computers?","Low programmability: it must be rewired to change task",["They need an ADC before they can do any calculation","They always cost more than digital computers do","They cannot work with continuous data at all"],"Analog computers are built for one task and have limited accuracy and storage.");
+Q("Analog vs Digital Computers","Which device is an analog computer example from the lecture?","Analogue speedometer driven by the wheel's rotation",["A laptop used for programming, document editing and browsing","A smartphone used for banking, calls and mobile payments","A server hosting a website for a university department"],"Mercury thermometers and analogue speedometers are examples.");
+Q("Analog vs Digital Computers","Why did digital computers win over analog ones?","They are cheaper, easier to reprogram and copy data perfectly",["They are more susceptible to physical noise and mechanical wear","They must be rewired every time their function is changed","They cannot be made small enough to be used in homes"],"Also easier to miniaturise, thanks to semiconductor transistors.");
+Q("Analog vs Digital Computers","Moore's Law says transistor counts double roughly every 2 years. After 8 years, the count is multiplied by:","16",["4","8","32"],"8 years = 4 doublings; 2^4 = 16.");
+Q("Analog vs Digital Computers","Which statement about digital computers is TRUE?","The same hardware can run different tasks by loading different software",["They must be rewired every time that a new task is given","They store their results only for a few seconds at a time","They cannot interact with the physical world in any way"],"Digital computers are programmable and general purpose; they use sensors and actuators with ADC/DAC.");
+/* Hybrid */
+Q("Hybrid Computers","A hybrid computer combines:","analog real-world measurement with digital processing and storage",["two supercomputers placed together in one large cabinet","a desktop and a laptop that share one computer case","a server and a printer that are joined in one unit"],"The analog part handles continuous signals; the digital part processes, stores and presents data.");
+Q("Hybrid Computers","An ECG machine captures the heart's electrical signals, converts them, and displays and stores the waveform. It is a:","hybrid computer",["supercomputer","mainframe","purely analog computer"],"Analog signals are converted digitally and stored; this is hybrid computing.");
+Q("Hybrid Computers","Which is a hybrid computer system?","A car engine management system",["A hand-cranked mechanical calculator","A paper filing cabinet","A purely mechanical clock"],"It reads analog sensors via ADC, processes digitally, then drives analog actuators.");
+Q("Hybrid Computers","In a hybrid weather station, which part handles processing, storage and the user interface?","The digital subsystem",["The analog subsystem","The rain gauge itself","The cooling fan"],"The analog subsystem handles continuous signals; the digital subsystem handles the rest.");
+Q("Hybrid Computers","IoT soil sensors measure analog moisture, convert via ADC and send digital data to the cloud. This is an example of:","agricultural monitoring with hybrid computing",["a mainframe banking system for a large bank","a supercomputer running a climate model","an analog mechanical computer with gears"],"IoT soil sensors combine analog measurement with digital transmission and analysis.");
+Q("Hybrid Computers","In a car, after digital processing, control signals sent to actuators are converted by a:","DAC back to analog",["ADC back to digital","RAM chip to text","PSU to heat"],"Digital output is converted to analog for the actuators.");
+
+
+// ─── ENGINE ──────────────────────────────────────────────────────────────────
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+const TOPICS = [...new Set(RAW.map(q => q.s))];
+const AVATARS = ['#2ecc7e','#1abc9c','#3498db','#9b59b6','#e67e22','#e74c3c','#f39c12','#16a085','#8e44ad','#2980b9'];
+
+let activeTopics = new Set(TOPICS);
+let quiz = [], cur = 0, score = 0, answered = false;
+let currentUser = {name:'', reg:''};
+let leaderboard = JSON.parse(localStorage.getItem('cap31101l2_lb') || '[]');
+let comments = JSON.parse(localStorage.getItem('cap31101l2_cmt') || '{}');
+
+function saveComments(){ localStorage.setItem('cap31101l2_cmt', JSON.stringify(comments)); }
+function saveLB(){ localStorage.setItem('cap31101l2_lb', JSON.stringify(leaderboard)); }
+
+// Randomize answer positions, ensure correct answer never appears in same slot twice in a row
+function buildQ(raw, prevAnsPos) {
+  const pool = [raw.correct, ...raw.wrong];
+  let opts, correctIdx, attempts = 0;
+  do {
+    opts = shuffle(pool);
+    correctIdx = opts.indexOf(raw.correct);
+    attempts++;
+  } while (correctIdx === prevAnsPos && attempts < 15);
+  return { s: raw.s, q: raw.q, opts, ans: correctIdx, exp: raw.exp };
+}
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  if(id==='leaderboard'){ renderLB(); document.querySelectorAll('.nav-btn')[1].classList.add('active'); }
+  else document.querySelectorAll('.nav-btn')[0].classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function buildTopicGrid(){
+  const g = document.getElementById('topic-grid');
+  g.innerHTML = '';
+  TOPICS.forEach(t => {
+    const b = document.createElement('button');
+    b.className = 'topic-toggle on';
+    b.textContent = t;
+    b.onclick = function(){
+      if(activeTopics.has(t)){
+        if(activeTopics.size === 1) return;
+        activeTopics.delete(t); b.className='topic-toggle';
+      } else {
+        activeTopics.add(t); b.className='topic-toggle on';
+      }
+    };
+    g.appendChild(b);
+  });
+}
+
+function updateStatPlayers(){
+  document.getElementById('stat-players').textContent = leaderboard.length;
+}
+
+function startQuiz(){
+  const name = document.getElementById('inp-name').value.trim();
+  const reg = document.getElementById('inp-reg').value.trim();
+  if(!name){ alert('Please enter your name.'); return; }
+  currentUser = { name, reg };
+  const filtered = shuffle(RAW.filter(q => activeTopics.has(q.s)));
+  if(!filtered.length){ alert('Select at least one topic.'); return; }
+  quiz = []; let prev = -1;
+  filtered.forEach(r => { const q = buildQ(r, prev); prev = q.ans; quiz.push(q); });
+  cur = 0; score = 0; answered = false;
+  showScreen('quiz'); renderQ();
+}
+
+function renderQ(){
+  if(cur >= quiz.length){ endQuiz(); return; }
+  const q = quiz[cur];
+  const pct = (cur / quiz.length) * 100;
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-label').textContent = `Question ${cur+1} of ${quiz.length}`;
+  document.getElementById('prog-score').textContent = `${score} pts`;
+  document.getElementById('q-section').textContent = q.s;
+  document.getElementById('q-text').textContent = q.q;
+  const opts = document.getElementById('options');
+  opts.innerHTML = '';
+  ['A','B','C','D'].forEach((l,i) => {
+    const b = document.createElement('button');
+    b.className = 'opt-btn';
+    b.innerHTML = `<span class="opt-letter">${l}</span><span>${q.opts[i]}</span>`;
+    b.onclick = function(){ if(!answered) select(i, b); };
+    opts.appendChild(b);
+  });
+  document.getElementById('feedback').style.display = 'none';
+  document.getElementById('next-btn').style.display = 'none';
+  document.getElementById('discussion-section').style.display = 'none';
+  answered = false;
+  window.scrollTo(0,0);
+}
+
+function select(i, btn){
+  answered = true;
+  const q = quiz[cur];
+  document.querySelectorAll('.opt-btn').forEach(b => b.disabled = true);
+  const fb = document.getElementById('feedback');
+  if(i === q.ans){
+    btn.classList.add('correct'); score++;
+    fb.className = 'feedback-box correct';
+    fb.innerHTML = `<strong>✓ Correct!</strong>${q.exp}`;
+  } else {
+    btn.classList.add('wrong');
+    document.querySelectorAll('.opt-btn')[q.ans].classList.add('correct');
+    fb.className = 'feedback-box wrong';
+    fb.innerHTML = `<strong>✗ Not quite.</strong>${q.exp}`;
+  }
+  fb.style.display = 'block';
+  document.getElementById('next-btn').style.display = 'inline-flex';
+  document.getElementById('prog-score').textContent = `${score} pts`;
+  showDiscussion(cur);
+}
+
+function nextQ(){ cur++; renderQ(); }
+
+function showDiscussion(idx){
+  const key = `q_${quiz[idx].q.slice(0,24).replace(/\W+/g,'_')}`;
+  document.getElementById('discussion-section').style.display = 'block';
+  renderComments(key);
+  document.getElementById('comment-input').dataset.key = key;
+}
+
+function renderComments(key){
+  const list = document.getElementById('comments-list');
+  const c = comments[key] || [];
+  if(!c.length){ list.innerHTML = '<div class="no-comments">No discussion yet — be the first.</div>'; return; }
+  list.innerHTML = c.map(cm => `
+    <div class="comment">
+      <div class="comment-author">${escHtml(cm.name)}${cm.reg?' <span style="color:var(--muted);font-weight:400">· '+escHtml(cm.reg)+'</span>':''}</div>
+      <div class="comment-text">${escHtml(cm.text)}</div>
+      <div class="comment-time">${cm.time}</div>
+    </div>`).join('');
+  list.scrollTop = list.scrollHeight;
+}
+
+function postComment(){
+  const inp = document.getElementById('comment-input');
+  const key = inp.dataset.key, text = inp.value.trim();
+  if(!text) return;
+  if(!comments[key]) comments[key] = [];
+  const now = new Date();
+  comments[key].push({ name: currentUser.name, reg: currentUser.reg, text,
+    time: now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+' · '+now.toLocaleDateString() });
+  saveComments(); inp.value = ''; renderComments(key);
+}
+
+function endQuiz(){
+  const total = quiz.length, pct = Math.round(score/total*100);
+  document.getElementById('result-ring').style.setProperty('--pct', pct+'%');
+  document.getElementById('result-pct').textContent = pct+'%';
+  document.getElementById('bd-correct').textContent = score;
+  document.getElementById('bd-wrong').textContent = total-score;
+  document.getElementById('bd-total').textContent = total;
+  let title, sub;
+  if(pct>=90){ title='Systems Expert! 💻'; sub='Exceptional command of computer types, analog vs digital and hybrid systems. Exam-ready.'; }
+  else if(pct>=75){ title='Well done! 🌱'; sub='Strong performance. Recheck the binary conversions and the analog vs digital differences to reach 90%.'; }
+  else if(pct>=60){ title='Good foundation. 📚'; sub='You understand the basics. Focus on the computer types by size, analog vs digital, and hybrid examples, then retry.'; }
+  else if(pct>=40){ title='Keep studying. 🔍'; sub='Go back to the slides topic by topic. Start with supercomputers and mainframes, then work through signals and hybrids.'; }
+  else { title='Back to the notes. 📖'; sub='Read each slide section carefully. Learn the definitions first, then attempt the quiz again.'; }
+  document.getElementById('result-title').textContent = title;
+  document.getElementById('result-sub').textContent = sub;
+  const entry = { name: currentUser.name, reg: currentUser.reg, score, total, pct,
+    time: new Date().toLocaleString(), color: AVATARS[Math.abs(hashStr(currentUser.name))%AVATARS.length] };
+  leaderboard.push(entry);
+  leaderboard.sort((a,b)=>b.pct-a.pct||b.score-a.score);
+  saveLB(); updateStatPlayers(); showScreen('result');
+}
+
+function restartQuiz(){
+  const filtered = shuffle(RAW.filter(q => activeTopics.has(q.s)));
+  quiz = []; let prev = -1;
+  filtered.forEach(r => { const q = buildQ(r, prev); prev = q.ans; quiz.push(q); });
+  cur=0; score=0; answered=false; showScreen('quiz'); renderQ();
+}
+
+function renderLB(){
+  const rows = document.getElementById('lb-rows');
+  document.getElementById('lb-count').textContent = `${leaderboard.length} attempt${leaderboard.length!==1?'s':''}`;
+  if(!leaderboard.length){ rows.innerHTML='<div class="lb-empty">No attempts yet. Be the first!</div>'; return; }
+  const rc=['gold','silver','bronze'], re=['1st','2nd','3rd'];
+  rows.innerHTML = leaderboard.slice(0,20).map((e,i)=>{
+    const initials=e.name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+    const isYou=currentUser.name&&e.name===currentUser.name;
+    return `<div class="lb-row">
+      <div class="lb-rank ${rc[i]||''}">${i<3?re[i]:i+1}</div>
+      <div class="lb-avatar" style="background:${e.color}22;color:${e.color}">${initials}</div>
+      <div class="lb-info">
+        <div class="lb-name">${escHtml(e.name)} ${isYou?'<span class="badge badge-you">you</span>':''}</div>
+        <div class="lb-meta">${e.reg?escHtml(e.reg)+' · ':''}${e.time}</div>
+      </div>
+      <div class="lb-score-wrap">
+        <div class="lb-score">${e.score}/${e.total}</div>
+        <div class="lb-pct">${e.pct}%</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function hashStr(s){ let h=0; for(let c of s){h=((h<<5)-h)+c.charCodeAt(0);h|=0;} return h; }
+function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+buildTopicGrid();
+updateStatPlayers();
+</script>
+</body>
+</html>
